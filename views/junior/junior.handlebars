@@ -1,0 +1,29 @@
+JUNIOR ENG PAGE
+
+<h3>Hello {{name}} !!!</h3>
+
+<br>
+<br>
+
+<h2>Assigned Complaints</h2>
+
+<table class="table table-bordered">
+  <thead class="table-success">
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Customer Name</th>
+      <th scope="col">Customer Contact</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each complaints}}
+        <tr>
+            <td>{{_id}}</td>          
+            <td>{{name}}</td>
+            <td>{{contact}}</td>
+            <td>{{desc}}</td>
+        </tr>
+    {{/each}}
+  </tbody>
+ </table>
