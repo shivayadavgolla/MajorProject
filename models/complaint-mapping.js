@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const dbconnect = require('../db')
-
+//const Complaint = require('./complaint');
+//const ComplaintMapping = require('./complaintMapping');
 //Call the db to connect the mongo db
 dbconnect()
 

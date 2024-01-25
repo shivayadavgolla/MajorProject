@@ -1,35 +1,202 @@
-<h3>Hello {{name}} !!!</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints</title>
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
 
-<br>
-<br>
+        .container {
+            margin-top: 50px;
+        }
 
-<table class="table table-bordered">
-  <thead class="table-success">
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">Customer Name</th>
-      <th scope="col">Customer Contact</th>
-      <th scope="col">Description</th>
-      <th scope="col">Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each complaints}}
-        <tr>
-            <td>{{_id}}</td>          
-            <td>{{name}}</td>
-            <td>{{contact}}</td>
-            <td>{{desc}}</td>
-            <td>
-              <form method="post" action="/assignEng">
-                    <!-- Add a hidden input field to store the _id -->
-                    <input type="hidden" name="complaintID" value="{{_id}}">
-                    <button type="submit" class="btn btn-success btn-block">Open</button>
-                </form>
-            </td>
-        </tr>
-    {{/each}}
-    
-  </tbody>
-</table>
+        h3 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
 
+        h2 {
+            color: #28a745;
+            margin-bottom: 30px;
+        }
+
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            border-top: 2px solid #28a745;
+            padding-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .counter {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6c757d;
+        }
+
+        .table th, .table td {
+            text-align: center;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+
+        .completed-box {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .in-progress-box {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .total-box {
+            background-color: #6c757d;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+  
+    <div class="container">
+        <h3>Hello {{name}} !!!</h3>
+        <h2>Complaints</h2>
+
+        <!-- Counters -->
+       
+        <div class="row">
+        <div class="col-md-12">
+            <a href="/addUser" class="btn btn-warning">Register New User</a>
+        </div>
+    </div>
+    <br>
+    <br>
+
+        <!-- Status Boxes -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="status-box completed-box">
+                    <h4>Completed Complaints</h4>
+                    <span id="completedCount">{{completed}}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="status-box in-progress-box">
+                    <h4>In Progress Complaints</h4>
+                    <span id="inProgressCount">{{in_progress}}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="status-box total-box">
+                    <h4>Total Complaints</h4>
+                    <span id="totalCount">{{complaints.length}}</span>
+                </div>
+            </div>
+        </div>
+        <!-- Complaint Table -->
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Customer Name</th>
+                    <th scope="col">Customer Contact</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each complaints}}
+                    <tr>
+                        <td>{{_id}}</td>
+                        <td>{{name}}</td>
+                        <td>{{contact}}</td>
+                        <td>{{desc}}</td>
+                        <td>
+                            <form method="post" action="{{#if (eq status 'Completed')}}/completed{{else if (eq status 'In Progress')}}/in-progress{{else}}/assignEng{{/if}}">
+                                <input type="hidden" name="complaintID" value="{{_id}}">
+                                {{#if (eq status 'Unassigned')}}
+                                    <button type="submit" class="btn btn-info btn-block">Unassigned</button>
+                               {{else if (eq status 'In Progress')}}
+                                    <!-- Add a unique identifier to the button and use it in JavaScript -->
+                                    <button type="button" class="btn btn-warning btn-block in-progress-btn" data-toggle="modal" data-target="#exampleModal" data-complaint-id="{{_id}}" data-engineer-name="madhu" >In Progress</button>
+                                {{else if (eq status 'Completed')}}
+                                    <button type="button" class="btn btn-success btn-block" disabled>Completed</button>
+                                {{/if}}
+                            </form>
+
+                        </td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Your JavaScript code -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Complaint Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="complaintIdDisplay"></p>
+                    <p id="engineerNameDisplay"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Your JavaScript code -->
+    <script>
+        // JavaScript code to handle the click event and display information in the modal
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.in-progress-btn').click(function() {
+                var complaintId = $(this).data('complaint-id');
+                var engineerName = $(this).data('engineer-name');
+
+                $('#complaintIdDisplay').text('Complaint ID: ' + complaintId);
+                $('#engineerNameDisplay').text('Engineer Name: ' + engineerName);
+
+                // Show the modal
+                $('#exampleModal').modal('show');
+            });
+        });
+    </script>
+</body>
+</html>

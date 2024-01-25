@@ -15,7 +15,20 @@ const port = process.env.PORT || 3000;
 const index = require('./routes/index');
 
 // View Engine
-app.engine('handlebars', exphbs({defaultLayout:'main'}));
+const hbsHelpers = {
+  eq: function (a, b) {
+      return a === b;
+  },
+  // Add more helpers as needed
+};
+
+// Register helpers with Handlebars
+const hbs = exphbs.create({
+  helpers: hbsHelpers,
+  defaultLayout: 'main',
+});
+
+app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 
 // Static Folder
@@ -31,9 +44,8 @@ app.use(session({
     saveUninitialized: true,
     resave: true,
     maxAge: null,
-    cookie : { httpOnly: true, maxAge: 2419200000 } // configure when sessions expires
+    cookie: { httpOnly: true, maxAge: 2419200000 } // configure when sessions expires
 }));
-
 
 // Init passport
 app.use(passport.initialize());
@@ -69,8 +81,7 @@ app.use(expressValidator({
 
 app.use('/', index);
 
-
 // Start Server
 app.listen(port, () => {
-  console.log('Server started on port '+port);
+  console.log('Server started on port ' + port);
 });
