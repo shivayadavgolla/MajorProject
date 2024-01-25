@@ -9,6 +9,71 @@ let ComplaintMapping = require('../models/complaint-mapping');
 
 // Home Page - Dashboard
 // Home Page - Dashboard
+//index.js
+
+// ... (other imports and middleware)
+
+// Add this route to handle the Close button click
+// Add this route to handle the Close button click
+//const User = require('../models/user'); // Make sure the path is correct
+
+// Create a new user instance
+const newUser = new User({
+    name: "Shiva Yadav",
+    username: "shivayadav",
+    email: "shivayadav@example.com",
+    password: "password",
+    role: "admin" // or "admin" or any other role
+});
+
+// Call the registerUser function
+User.registerUser(newUser, (err, user) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log("User registered successfully:", user);
+    }
+});
+router.post('/closeComplaint', async (req, res) => {
+    try {
+        const { complaintID } = req.body;
+
+        // Update the complaint status to "Completed" in the database
+        await Complaint.findByIdAndUpdate(complaintID, { status: 'Completed' });
+
+        // Send a success response
+        res.json({ success: true, message: 'Complaint closed successfully' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+});
+
+  
+
+// ... (other routes)
+
+// Import necessary modules
+
+// ... other imports and middleware
+
+// router.post('/', async (req, res) => {
+//     const { complaintID } = req.body;
+
+//     try {
+//         // Update the status of the complaint to 'Completed'
+//         await Complaint.updateComplaintStatus(complaintID, 'Completed');
+
+//         // Optionally, you may want to update other logic related to the closure
+
+//         res.json({ success: true, message: 'Complaint closed successfully' });
+//     } catch (error) {
+//         console.error('Error:', error);
+//         res.status(500).json({ success: false, message: 'Internal Server Error' });
+//     }
+// });
+
+
 router.get('/', ensureAuthenticated, (req, res, next) => {
     const userEmail = req.user.email;
 
@@ -30,11 +95,46 @@ router.get('/', ensureAuthenticated, (req, res, next) => {
 router.get('/login', (req, res, next) => {
     res.render('login');
 });
+router.get('/close-complaint/:complaintID', ensureAuthenticated, async (req, res, next) => {
+    try {
+        const complaintID = req.params.complaintID;
+        const status = req.query.status; // Get the status from the query parameter
+
+        // Update the complaint status to 'Completed' in the database
+        const updatedComplaint = await Complaint.findOneAndUpdate(
+            { _id: complaintID, status: 'In Progress' },
+            { $set: { status: 'Completed' } },
+            { new: true }
+        );
+
+        if (updatedComplaint) {
+            // Redirect to the junior engineer page after updating the status
+            res.redirect('/jeng');
+        } else {
+            // Handle the case where the complaint was not updated (status may not be 'In Progress')
+            console.error('Error: Complaint not updated');
+            res.status(400).send('Bad Request');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+//index.js
+
+// ... (other imports and middleware)
+
+
+// ... (other routes)
 
 // Register Form
 router.get('/register', (req, res, next) => {
     res.render('register');
 });
+
+router.get('/addUser',(req,res,next)=>{
+    res.render('addUser');
+})
 
 // Logout
 router.get('/logout', ensureAuthenticated,(req, res, next) => {
@@ -45,15 +145,33 @@ router.get('/logout', ensureAuthenticated,(req, res, next) => {
 
 // Admin
 router.get('/admin', ensureAuthenticated, (req,res,next) => {
+    try{
+    const complaints= Complaint.getAllComplaints();
     Complaint.getAllComplaints((err, complaints) => {
         if (err) throw err;
         const plainComplaints = complaints.map(complaint => complaint.toObject());
-    
+        const complaintsCount = complaints.length;
+        const inProgressComplaints = complaints.filter(complaint => complaint.status === 'In Progress');
+        const completedComplaints = complaints.filter(complaint => complaint.status === 'Completed');
+
+        const inProgressCount = inProgressComplaints.length;
+        const completedCount = completedComplaints.length;
+
+
+        
         res.render('admin/admin', {
                 name:req.user.name,
                 complaints : plainComplaints,
+                complaintsCount: complaints,
+                in_progress: inProgressCount,
+                completed : completedCount
             });
-    });        
+    }); 
+}     
+    catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 //assigning cases to engineer
@@ -79,12 +197,12 @@ router.post('/assignEng', (req, res,next) => {
     
 });
 // Assign the Complaint to Engineer
-router.post('/assign', (req,res,next) => {
+router.post('/assign', (req, res, next) => {
     const complaintID = req.body.complaintID;
     const engineerName = req.body.engineerName;
 
-    req.checkBody('complaintID', 'Contact field is required').notEmpty();
-    req.checkBody('engineerName', 'Description field is required').notEmpty();
+    req.checkBody('complaintID', 'Complaint ID field is required').notEmpty();
+    req.checkBody('engineerName', 'Engineer name field is required').notEmpty();
 
     let errors = req.validationErrors();
 
@@ -93,48 +211,88 @@ router.post('/assign', (req,res,next) => {
             errors: errors
         });
     } else {
-        const newComplaintMapping = new ComplaintMapping({
-            complaintID: complaintID,
-            engineerName: engineerName,
-        });
+        // Update the status of the complaint to 'In Progress'
+        Complaint.updateComplaintStatus(complaintID, 'In Progress', (err, updatedComplaint) => {
+            if (err) {
+                console.error('Error updating complaint status:', err);
+                req.flash('error_msg', 'Failed to update complaint status');
+                res.redirect('/admin');
+            } else {
+                // Create a new ComplaintMapping entry
+                const newComplaintMapping = new ComplaintMapping({
+                    complaintID: complaintID,
+                    engineerName: engineerName,
+                });
 
-        ComplaintMapping.registerMapping(newComplaintMapping, (err, complaint) => {
-            if (err) throw err;
-            req.flash('success_msg', 'You have successfully assigned a complaint to Engineer');
-            res.redirect('/admin');
+                ComplaintMapping.registerMapping(newComplaintMapping, (err, mapping) => {
+                    if (err) {
+                        console.error('Error registering complaint mapping:', err);
+                        req.flash('error_msg', 'Failed to register complaint mapping');
+                        res.redirect('/admin');
+                    } else {
+                        req.flash('success_msg', 'You have successfully assigned a complaint to an engineer');
+                        res.redirect('/admin');
+                    }
+                });
+            }
         });
     }
-
 });
+
+// Assuming you're using Express.js
+router.get('/getAssignedEngineer/:complaintId', async (req, res) => {
+    try {
+        const complaintId = req.params.complaintId;
+
+        // Find the corresponding complaint mapping
+        const complaintMapping = await ComplaintMapping.findOne({ complaintID: complaintId });
+
+        if (complaintMapping) {
+            // Send the assigned engineer name in the response
+            res.json({ engineerName: complaintMapping.engineerName });
+        } else {
+            res.status(404).json({ error: 'Complaint mapping not found' });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 router.get('/jeng', ensureAuthenticated, async (req, res, next) => {
     try {
-        const allComplaints = [];
+        // Get the username (engineerName) of the logged-in junior engineer
+        const engineerName = req.user.username;
 
-        const complaintsMapping = await ComplaintMapping.getAllComplaintMappings();
-
-        console.log('Retrieved complaintsMapping:', complaintsMapping);
+        // Find all complaint mappings for the logged-in junior engineer
+        const complaintsMapping = await ComplaintMapping.find({ engineerName });
 
         if (!complaintsMapping || !Array.isArray(complaintsMapping)) {
-            // Handle the case where complaintsMapping is not iterable
             console.error('Error: Invalid data format for complaintsMapping');
             res.status(500).send('Internal Server Error');
             return;
         }
 
+        // Fetch the details of assigned complaints based on the mappings
+        const assignedComplaints = [];
         for (const mapping of complaintsMapping) {
-            const foundComplaint = await Complaint.findOne({ _id: mapping.complaintID });
-
+            const foundComplaint = await Complaint.findById(mapping.complaintID);
             if (foundComplaint) {
-                allComplaints.push(foundComplaint.toObject());
+                assignedComplaints.push(foundComplaint.toObject());
             }
         }
 
-        // console.log('Retrieved complaints:', allComplaints);
+        const totalComplaints = assignedComplaints.length;
+        const inProgressCount = assignedComplaints.filter(complaint => complaint.status === 'In Progress').length;
+        const completedCount = assignedComplaints.filter(complaint => complaint.status === 'Completed').length;
 
         res.render('junior/junior', {
             name: req.user.name,
-            complaints: allComplaints,
+            complaints: assignedComplaints,
+            completed_count : completedCount,
+            in_progressCount: inProgressCount,
+            complaintTotal : totalComplaints
         });
     } catch (error) {
         console.error('Error:', error);
@@ -142,10 +300,20 @@ router.get('/jeng', ensureAuthenticated, async (req, res, next) => {
     }
 });
 
+// router.post('/update-status', async (req, res) => {
+//     try {
+//         const complaintID = req.body.complaintID;
 
+//         // Update the status of the complaint to 'In Progress' or any desired status
+//         const stus=req.body.status;
+//         await Complaint.findByIdAndUpdate(complaintID, { status: 'In Progress' });
 
-
-
+//         res.redirect('/jeng'); // Redirect back to the Junior Engineer page
+//     } catch (error) {
+//         console.error('Error:', error);
+//         res.status(500).send('Internal Server Error');
+//     }
+// });
 
 //Complaint
 router.get('/complaint', ensureAuthenticated, (req, res, next) => {
@@ -233,6 +401,48 @@ router.post('/register', (req, res, next) => {
         });
     }
 });
+
+// Assuming Express.js syntax
+router.post('/completed', (req, res) => {
+    // Retrieve complaint details from the request body
+    const complaintID = req.body.complaintID;
+
+    // Retrieve completion message based on complaintID
+    const completionMessage = getCompletionMessage(complaintID);
+
+    // Render the 'completed' view with completion message
+    res.render('completed', {
+        completionMessage: completionMessage
+    });
+});
+
+router.post('/in-progress', (req, res) => {
+    // Retrieve complaint details from the request body
+    const complaintID = req.body.complaintID;
+
+    // Retrieve assigned engineer details based on complaintID
+    const assignedTo = getAssignedEngineer(complaintID);
+
+    // Render the 'in-progress' view with assigned engineer details
+    res.render('in-progress', {
+        assignedTo: assignedTo
+    });
+});
+
+router.post('/complete', async (req, res) => {
+    try {
+        const complaintID = req.body.complaintID;
+
+        // Update the status of the complaint to 'Completed'
+        await Complaint.findByIdAndUpdate(complaintID, { status: 'Completed' });
+
+        res.redirect('/jeng'); // Redirect back to the Junior Engineer page
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 
 // Local Strategy
 passport.use(new LocalStrategy((username, password, done) => {
