@@ -7,13 +7,18 @@
         <input class="form-control" type="text" name="complaintID" value={{complaintID}}>
     </div>
     <div class="form-group">
-        <label>Engineer</label>
-        <select name="engineerName" id="engineerName" class="form-control">
-            {{#each engineer}}
-                <option value={{username}}> {{username}} </option>
+    <label>Engineer</label>
+    <div id="engtype" class="form-group">
+        <label for="engineerType">Select Engineer:</label>
+        <select id="engineerType" class="form-control" name="engineerName">
+            <option value="none">Not selected</option>
+            <!-- Loop through each engineer and generate an option for their name -->
+            {{#each engineers}}
+            <option value="{{this.username}}">{{this.name}}</option>
             {{/each}}
         </select>
     </div>
+</div>
     <div class="form-group">
         <button type="submit" class="btn btn-success btn-block">Assign to Engineer</button>
     </div>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints</title>
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+         .highlight {
+            text-decoration: underline;
+            background: #28a745;
+        }
+        .small-btn {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        h3 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #28a745;
+            margin-bottom: 30px;
+        }
+
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            border-top: 2px solid #28a745;
+            padding-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .counter {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6c757d;
+        }
+
+        .table th, .table td {
+            text-align: center;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+
+        .completed-box {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .in-progress-box {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .total-box {
+            background-color: #6c757d;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+  
+    <div class="container">
+        <h3>Hello {{name}} !!!</h3>
+        <h2>Complaints</h2>
+        
+        <div class="row">
+        <div class="col-md-12">
+            {{!-- <a href="/addUser" class="btn btn-warning">Register New User</a> --}}
+            <a href="/addAdmin" class="btn btn-warning">Register New Admin</a>
+            <a href="/addSuperAdmin" class="btn btn-warning">Register New SuperAdmin</a>
+            <a href="/addCategory" class="btn btn-warning">Add New Catogory</a>
+             <a href="/manageCategory" class="btn btn-warning">Manage Category</a>
+        </div>
+    </div>
+    <br>
+        <!-- Status Boxes -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="status-box completed-box">
+                    <h4 class="counter-title">Completed Complaints</h4>
+                    <span id="completedCount" class="small-btn counter-value">{{completed}}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="status-box in-progress-box">
+                    <h4 class="counter-title">In Progress Complaints</h4>
+                    <span id="inProgressCount" class="small-btn counter-value">{{in_progress}}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="status-box total-box">
+                    <h4 class="counter-title">Total Complaints</h4>
+                    <span id="totalCount" class="small-btn counter-value">{{complaints.length}}</span>
+                </div>
+            </div>
+
+
+        <!-- Complaint Table -->
+       
+
+    </div>
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Your JavaScript code -->
+  <!-- Your JavaScript code -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Complaint Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Complaint ID:</strong> <span id="complaintIdDisplay"></span></p>
+                <p><strong>Engineer Name:</strong> <span id="engineerNameDisplay"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complaint Table -->
+<div class="row">
+    <div class="col-md-12">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+    </div>
+</div>
+<br>
+
+<table class="table table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Customer Contact</th>
+            <th scope="col">Description</th>
+            <th scope="col">Status</th>
+            <th scope="col">Image</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each complaints}}
+        <tr>
+            <td>{{_id}}</td>
+            <td>{{name}}</td>
+            <td>{{contact}}</td>
+            <td>{{desc}}</td>
+            <td>{{status}}</td>
+       <td>
+                <button type="button" class="btn btn-primary btn-view-image" data-toggle="modal" data-target="#imageModal{{_id}}" data-img="{{img}}">View Image</button>
+            </td>
+        </tr>
+        
+        <!-- Modal for each image -->
+        <div class="modal fade" id="imageModal{{_id}}" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel{{_id}}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageModalLabel{{_id}}">Complaint Image</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img id="complaintImage{{_id}}" src="" alt="Complaint Image" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $('.btn-view-image').click(function(){
+            var imgSrc = $(this).data('img');
+            var modalId = $(this).data('target');
+            $(modalId).find('img').attr('src', '/uploads/' + imgSrc);
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var searchInput = document.getElementById("searchInput");
+        var rows = document.querySelectorAll("tbody tr");
+
+        // Event listener for search input
+        searchInput.addEventListener("input", function() {
+            var searchText = searchInput.value.trim().toLowerCase();
+
+            // Loop through each row of the table
+            rows.forEach(function(row) {
+                // Get the cells of the current row
+                var cells = row.querySelectorAll("td");
+
+                // Flag to indicate if row matches search text
+                var rowMatch = false;
+
+                // Loop through each cell of the row
+                cells.forEach(function(cell) {
+                    // Get the text content of the cell
+                    var cellText = cell.textContent.trim().toLowerCase();
+
+                    // If the cell text contains the search text, set rowMatch flag to true
+                    if (cellText.includes(searchText)) {
+                        rowMatch = true;
+
+                        // Highlight the matched text by adding a CSS class
+                        cell.innerHTML = cellText.replace(new RegExp(searchText, 'gi'), function(match) {
+                            return '<span class="highlight">' + match + '</span>';
+                        });
+                    } else {
+                        // Reset the HTML content of the cell if it doesn't match
+                        cell.innerHTML = cellText;
+                    }
+                });
+
+                // Show or hide the row based on rowMatch flag
+                if (rowMatch) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

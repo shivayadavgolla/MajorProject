@@ -4,16 +4,58 @@
       <form method="post" action="/login" class="form-sm border rounded p-3">
         <div class="form-group">
           <label>Username</label>
-          <input class="form-control" type="text" name="username" placeholder="Username">
+          <input class="form-control" type="text" name="username" placeholder="Username" required>
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input class="form-control" type="password" name="password" placeholder="Password">
+          <input class="form-control" type="password" name="password" placeholder="Password" required> 
+        </div>
+        <div class="form-group">
+          <label for="userType">User Type:</label>
+          <div class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-secondary">
+              <input type="radio" name="userType" id="userType1" value="user1"> User
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="userType" id="userType2" value="admin"> Admin
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="userType" id="userType3" value="engineer"> Engineer
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="userType" id="userType3" value="superadmin"> SuperAdmin
+            </label>
+          </div>
         </div>
         <button class="btn btn-info btn-block" type="submit">Login</button>
         <br>
-        <p class="text-center">Don't Have An Account? <a class="btn btn-warning btn-sm" href="/register">Register</a></p>
+        <p class="text-center">Don't Have An Account? <a class="btn btn-warning btn-sm" href="/registerUser">Register</a></p>
       </form>
     </div>
   </div>
 </div>
+
+<style>
+  .btn-group-toggle .btn.active {
+    background-color: red !important; /* Added !important to override Bootstrap's styles */
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const userTypeInputs = document.querySelectorAll('.btn-group-toggle input[type="radio"]');
+    
+    userTypeInputs.forEach(function(input) {
+      input.addEventListener('click', function() {
+        const parentLabel = this.closest('label');
+        const allLabels = document.querySelectorAll('.btn-group-toggle label');
+        
+        allLabels.forEach(function(label) {
+          label.classList.remove('active');
+        });
+        
+        parentLabel.classList.add('active');
+      });
+    });
+  });
+</script>

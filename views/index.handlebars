@@ -16,7 +16,8 @@
       <th scope="col">Customer Name</th>
       <th scope="col">Customer Contact</th>
       <th scope="col">Description</th>
-      <th scope="'col">Status</th>
+      <th scope="col">Status</th>
+      <th scope="col">Image</th> <!-- New column for the image -->
     </tr>
   </thead>
   <tbody>
@@ -27,8 +28,43 @@
             <td>{{contact}}</td>
             <td>{{desc}}</td>
             <td>{{status}}</td>
+             <td>
+    <button type="button" class="btn btn-primary btn-view-image" data-toggle="modal" data-target="#imageModal{{_id}}">View Image</button>
+</td>
+
+<!-- Modal for each image -->
+<div class="modal fade" id="imageModal{{_id}}" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel{{_id}}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel{{_id}}">Complaint Image</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img src="/uploads/{{img}}" alt="Complaint Image" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
         </tr>
     {{/each}}
     
   </tbody>
 </table>
+
+<!-- JavaScript code -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('.btn-view-image').click(function() {
+            var complaintId = $(this).data('complaint-id');
+            $('#imageModal' + complaintId).modal('show');
+        });
+    });
+</script>
+

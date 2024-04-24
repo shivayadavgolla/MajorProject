@@ -1,0 +1,200 @@
+<!-- Add this in your HTML file or in a separate CSS file -->
+<style>
+    /* Set the font family and size for better readability */
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    /* Apply styles to the table */
+    table {
+        width: 80%; /* Reduce table width */
+        border-collapse: collapse;
+        margin-top: 20px; /* Add some space above the table */
+    }
+
+    /* Style for table header cells */
+    th {
+        padding: 10px 5px; /* Adjust padding */
+        text-align: left;
+        border-bottom: 2px solid #ddd; /* Increase border thickness for header */
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    /* Style for table body cells */
+    td {
+        padding: 8px 5px; /* Adjust padding */
+        border-bottom: 1px solid #ddd;
+    }
+
+    /* Apply alternate background color to even rows */
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Hover effect on table rows */
+    tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    /* Adjust width of the first column */
+    td:first-child {
+        width: 40%; /* Increase width of the first column */
+    }
+
+    /* Style for delete button */
+    .delete-btn {
+        padding: 4px 8px; /* Adjust padding */
+        background-color: #ff6347;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s; /* Add smooth transition effect */
+    }
+
+    /* Style for delete button on hover */
+    .delete-btn:hover {
+        background-color: #d9534f; /* Darken the background color on hover */
+    }
+
+    /* Style for highlighted group rows */
+    .group-row {
+        background-color: #f2f2f2; /* Light gray background for group rows */
+        font-weight: bold; /* Make group names bold */
+    }
+</style>
+
+<input type="text" id="searchInput" placeholder="Search...">
+<button id="searchButton">Search</button>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Group</th>
+            <th>Category</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each categorizedCategories}}
+            {{#if this.length}}
+                <tr class="group-row"> <!-- Apply group row styling -->
+                    <td>{{@key}}</td>
+                    <td></td> <!-- Empty column for group -->
+                    <td>
+                        <button class="delete-btn" onclick="deleteGroup('{{@key}}')">Delete Group</button>
+                    </td>
+                </tr>
+                {{#each this}}
+                    <tr>
+                        <td></td> <!-- Empty column for category -->
+                        <td>{{this}}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteCategory('{{@../key}}', '{{this}}')">Delete</button>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{/if}}
+        {{/each}}
+    </tbody>
+</table>
+
+<script>
+    // Function to delete a group
+    // Function to delete a group
+function deleteGroup(group) {
+    // Prompt the user for confirmation before deletion
+    if (confirm(`Are you sure you want to delete the group '${group}'? All associated categories will be deleted as well.`)) {
+        // Make an AJAX request to delete the group
+        fetch('/deleteGroup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                group: group
+            })
+        })
+        .then(response => {
+            // Check if the response is successful
+            if (response.ok) {
+                // Redirect to the manageCategory page after deletion
+                window.location.href = '/manageCategory';
+            } else {
+                // Handle errors if any
+                throw new Error('Failed to delete group');
+            }
+        })
+        .catch(error => {
+            // Log and display any errors
+            console.error('Error:', error);
+            alert('Failed to delete group. Please try again later.');
+        });
+    }
+}
+
+
+    // Function to delete a category
+     function deleteCategory(group, category) {
+        // Prompt the user for confirmation before deletion
+        if (confirm(`Are you sure you want to delete the category '${category}' from group '${group}'?`)) {
+            // Make an AJAX request to delete the category
+            fetch('/deleteCategory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    group: group,
+                    category: category
+                })
+            })
+            .then(response => {
+                // Check if the response is successful
+                if (response.ok) {
+                    // Redirect to the manageCategory page after deletion
+                    window.location.href = '/manageCategory';
+                } else {
+                    // Handle errors if any
+                    throw new Error('Failed to delete category');
+                }
+            })
+            .catch(error => {
+                // Log and display any errors
+                console.error('Error:', error);
+                alert('Failed to delete category. Please try again later.');
+            });
+        }
+    }
+
+
+
+
+     document.getElementById("searchButton").addEventListener("click", function() {
+        // Retrieve search input value
+        var searchValue = document.getElementById("searchInput").value.toLowerCase();
+        
+        // Get all rows in the table body
+        var rows = document.querySelectorAll("tbody tr");
+        
+        // Loop through each row
+        rows.forEach(function(row) {
+            var displayRow = false; // Initialize flag to determine whether to display the row
+            
+            // Loop through each cell in the row
+            row.querySelectorAll("td").forEach(function(cell) {
+                var cellContent = cell.textContent.toLowerCase(); // Get cell content
+                
+                // Check if cell content includes search value
+                if (cellContent.includes(searchValue)) {
+                    displayRow = true; // Set flag to display row
+                }
+            });
+            
+            // Display or hide row based on flag
+            row.style.display = displayRow ? "" : "none";
+        });
+    });
+</script>

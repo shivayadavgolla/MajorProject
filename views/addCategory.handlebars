@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories</title>
+    <style>
+        /* Your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        h2 {
+            margin-top: 30px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<form method="post" action="/addCategory" class="form-sm border rounded p-4" style="background-color: white;">
+    <h1>Manage Categories</h1>
+
+    <div style="max-width: 600px; margin: 0 auto;">
+        <h2>Add New Category</h2>
+        <form id="addCategoryForm">
+            <label for="categoryName">Category Name:</label>
+            <input type="text" id="categoryName" name="categoryName" required>
+
+            <label for="categoryGroup">Category Group:</label>
+            <select id="categoryGroup" name="categoryGroup" onchange="toggleInput()">
+                <option value="">Select a Group</option>
+                {{#each groups}}
+                <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+
+            <label for="customGroup">Or type a custom group:</label>
+            <input type="text" id="customGroup" name="customGroup" placeholder="Custom group name">
+
+            <button type="submit">Add Category</button>
+        </form>
+    </div>
+</form>
+
+<script>
+    function toggleInput() {
+        var categoryGroup = document.getElementById("categoryGroup");
+        var customGroup = document.getElementById("customGroup");
+
+        if (categoryGroup.value !== "") {
+            customGroup.disabled = true;
+            customGroup.value = "";
+        } else {
+            customGroup.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

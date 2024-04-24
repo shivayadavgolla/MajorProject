@@ -1,4 +1,5 @@
-<form method="post" action="/registerComplaint">
+
+<form method="post" action="/registerComplaint" enctype="multipart/form-data">
 
     <h2>Register a Complaint</h2>
     <div class="form-group">
@@ -13,9 +14,36 @@
         <label>Contact Number</label>
         <input class="form-control" type="text" name="contact" placeholder="Phone Number">
     </div>
+      <div class="form-group">
+    <label for="complaintCategory">Select a Complaint Category:</label>
+    <select class="form-control" id="complaintCategory" name="category">
+        <option value="">Select a Category</option>
+        {{#each categorizedCategories}}
+            {{#if this.length}} <!-- Only display if there are matching categories -->
+                <optgroup label="{{@key}}">
+                    {{#each this}}
+                        <option value="{{this}}">{{this}}</option> <!-- Category name as option -->
+                    {{/each}}
+                </optgroup>
+            {{/if}}
+        {{/each}}
+    </select>
+    <input type="hidden" id="selectedGroup" name="group">
+
+</div>
     <div class="form-group">
         <label>Description</label>
         <textarea type="text" class="form-control" name="desc" cols="30" rows="10" placeholder="Enter the Description"></textarea>
+    </div>
+    <div class="form-group">
+        <label>Attach Image</label>
+        <br>
+         <button id="openCameraButton" class="btn btn-primary" type="button">Open Camera</button>
+         <button id="closeCameraButton" class="btn btn-danger" type="button" style="display:none;">Close Camera</button>
+        <video id="cameraFeed" width="400" height="300" style="display:none;" autoplay></video>
+         <button id="captureButton" class="btn btn-primary" type="button" style="display:none;">Capture Image</button>
+        <input type="hidden" id="imageData" name="imageData">
+         <input type="file" id="fileInput" name="image">
     </div>
     <button class="btn btn-success" type="submit">Submit Complaint</button>
     <br>
@@ -23,5 +51,96 @@
     Wanna change your mind? <a class="btn btn-warning btn-sm" href="/">Back</a>
     <br>
     <br>
-
+    <!-- Button to open the camera -->
 </form>
+
+<script>
+    const video = document.getElementById('cameraFeed');
+    const captureButton = document.getElementById('captureButton');
+    const imageDataInput = document.getElementById('imageData');
+    const fileInput = document.getElementById('fileInput');
+    const openCameraButton = document.getElementById('openCameraButton');
+    const closeCameraButton = document.getElementById('closeCameraButton');
+    let mediaStream;
+
+    // Function to start the camera
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                mediaStream = stream;
+                video.srcObject = stream;
+                video.style.display = 'block'; // Display the video element
+                openCameraButton.style.display = 'none'; // Hide the open camera button
+                closeCameraButton.style.display = 'inline-block'; // Show the close camera button
+                captureButton.style.display = 'inline-block'; // Show the capture image button
+            })
+            .catch(err => {
+                console.error('Error accessing the camera:', err);
+            });
+    }
+
+    // Function to stop the camera
+    function stopCamera() {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+        }
+        video.srcObject = null;
+        video.style.display = 'none'; // Hide the video element
+        openCameraButton.style.display = 'inline-block'; // Show the open camera button
+        closeCameraButton.style.display = 'none'; // Hide the close camera button
+        captureButton.style.display = 'none'; // Hide the capture image button
+    }
+
+    // Capture image from video stream
+    captureButton.addEventListener('click', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/jpeg');
+        imageDataInput.value = imageData;
+    });
+
+    // Handle file input change event
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            imageDataInput.value = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Open camera when the button is clicked
+    openCameraButton.addEventListener('click', () => {
+        startCamera();
+    });
+
+    // Close camera when the button is clicked
+    closeCameraButton.addEventListener('click', () => {
+        stopCamera();
+    });
+
+
+   document.getElementById('complaintCategory').addEventListener('change', function() {
+    var categorySelect = this;
+    var groupInput = document.getElementById('selectedGroup');
+    var selectedCategory = categorySelect.options[categorySelect.selectedIndex].text;
+
+    // Assuming you have an object 'categoryToGroupMap' that maps categories to groups
+    var categoryToGroupMap = {
+        // Define your mapping here, for example:
+        'Category1': 'Group1',
+        'Category2': 'Group2',
+        // Add more mappings as needed
+    };
+
+    // Retrieve the corresponding group from the categoryToGroupMap
+    var selectedGroup = categoryToGroupMap[selectedCategory];
+
+    // Set the value of the hidden input field to the selected group
+    groupInput.value = selectedGroup || ''; // If selectedGroup is undefined, set empty string
+});
+</script>
